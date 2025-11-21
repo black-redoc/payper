@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id             String    @id @default(uuid())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  name           String
+  address        String?
+  phone          String?
+  email          String?
+  website        String?
+  taxId          String?
+  logo           String?
+  tipPercentage  Float     @default(10)
+  tipEnabled     Boolean   @default(true)
+  invoices       Invoice[]
+}
+
+model Client {
+  id                   String  @id @default(uuid())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  firstName            String?
+  lastName             String?
+  email                String?
+  identificationType   String?
+  identificationNumber String?
+  invoices             Invoice[]
+}
+
+model Invoice {
+  id              String         @id @default(uuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  number          String         @unique
+  status          String         @default("draft") // draft, pending, completed
+  companyId       String
+  company         Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  clientId        String?
+  client          Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  items           InvoiceItem[]
+  subtotalAmount  Float          @default(0)
+  subtotalCurrency String        @default("COP")
+  tipAmount       Float          @default(0)
+  tipCurrency     String         @default("COP")
+  totalAmount     Float          @default(0)
+  totalCurrency   String         @default("COP")
+  notes           String?
+  dueDate         DateTime?
+  notes_relation  Note[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  description     String
+  quantity        Float
+  unitPriceAmount Float
+  unitPriceCurrency String @default("COP")
+  totalAmount     Float
+  totalCurrency   String   @default("COP")
+  invoiceId       String?
+  invoice         Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  noteId          String?
+  note            Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([noteId])
+}
+
+model Note {
+  id                String        @id @default(uuid())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  number            String        @unique
+  type              String        // credit, debit
+  invoiceId         String
+  invoice           Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  reason            String        // return, discount, error, cancellation, additional_charge, service_charge, other
+  reasonDescription String
+  items             InvoiceItem[]
+  subtotalAmount    Float         @default(0)
+  subtotalCurrency  String        @default("COP")
+  totalAmount       Float         @default(0)
+  totalCurrency     String        @default("COP")
+
+  @@index([invoiceId])
+  @@index([type])
+}
