@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InvoiceApp - Gestión de Facturas",
+  title: "Payper - Gestión de Facturas",
   description: "Aplicación para gestionar facturas de manera simple y eficiente",
 };
 

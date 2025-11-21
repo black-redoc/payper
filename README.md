@@ -1,4 +1,4 @@
-# Invoice Management System
+# Payper
 
 A modern invoice management system built with Next.js, following hexagonal architecture principles.
 
