@@ -1,7 +1,6 @@
 import { InvoiceEntity, InvoiceStatus } from '../entities/Invoice';
 import { InvoiceItemEntity } from '../entities/InvoiceItem';
 import { ClientEntity } from '../entities/Client';
-import { CompanyEntity } from '../entities/Company';
 import { InvoiceRepository } from '../repositories/InvoiceRepository';
 import { CompanyRepository } from '../repositories/CompanyRepository';
 import { Money } from '@/shared/types';
@@ -15,12 +14,14 @@ export class InvoiceService {
   async createInvoice(client?: ClientEntity): Promise<InvoiceEntity> {
     const company = await this.companyRepository.findFirst();
     if (!company) {
-      throw new Error('No company found. Please set up company information first.');
+      throw new Error(
+        'No company found. Please set up company information first.'
+      );
     }
 
     const invoice = InvoiceEntity.create({
       company,
-      client
+      client,
     });
 
     return this.invoiceRepository.save(invoice);
@@ -40,7 +41,7 @@ export class InvoiceService {
     const item = InvoiceItemEntity.create({
       description,
       quantity,
-      unitPrice
+      unitPrice,
     });
 
     invoice.addItem(item);
@@ -72,7 +73,7 @@ export class InvoiceService {
       throw new Error('Invoice not found');
     }
 
-    const item = invoice.items.find(i => i.id === itemId);
+    const item = invoice.items.find((i) => i.id === itemId);
     if (!item) {
       throw new Error('Item not found in invoice');
     }
@@ -95,7 +96,9 @@ export class InvoiceService {
     }
 
     if (status === 'completed' && !invoice.canBeCompleted) {
-      throw new Error('Cannot complete invoice: missing required items or invalid data');
+      throw new Error(
+        'Cannot complete invoice: missing required items or invalid data'
+      );
     }
 
     invoice.status = status;

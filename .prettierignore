@@ -1,0 +1,15 @@
+# Generated files
+/src/generated/
+*.js
+
+# Build output
+/.next/
+/out/
+/.open-next/
+
+# Dependencies
+/node_modules/
+
+# Other
+.wrangler/
+package-lock.json
