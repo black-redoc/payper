@@ -6,11 +6,22 @@ import toast from 'react-hot-toast';
 import { ClientEntity } from '@/domain/entities/Client';
 import { CompanyEntity } from '@/domain/entities/Company';
 import { InvoiceItemEntity } from '@/domain/entities/InvoiceItem';
-import { serviceContainer } from '@/shared/utils/serviceContainer';
+import { InvoiceEntity } from '@/domain/entities/Invoice';
 import { ClientForm } from '@/presentation/components/Invoice/ClientForm';
 import { InvoiceItemForm } from '@/presentation/components/Invoice/InvoiceItemForm';
 import { Button } from '@/presentation/components/ui/Button';
 import { Card } from '@/presentation/components/ui/Card';
+
+interface CompanyResponse {
+  success: boolean;
+  data: CompanyEntity | null;
+}
+
+interface InvoiceResponse {
+  success: boolean;
+  data?: InvoiceEntity;
+  error?: string;
+}
 
 export default function NewInvoicePage() {
   const router = useRouter();
@@ -28,13 +39,16 @@ export default function NewInvoicePage() {
 
   const loadCompanyData = async () => {
     try {
-      const companyData = await serviceContainer.companyService.getCompany();
-      if (!companyData) {
+      const response = await fetch('/api/company');
+      const result = (await response.json()) as CompanyResponse;
+
+      if (result.success && result.data) {
+        setCompany(result.data);
+      } else {
         toast.error('Debes configurar los datos de tu empresa primero');
         router.push('/settings');
         return;
       }
-      setCompany(companyData);
     } catch (error) {
       console.error('Error loading company:', error);
       toast.error('Error al cargar los datos de la empresa');
@@ -64,21 +78,31 @@ export default function NewInvoicePage() {
 
     setSaving(true);
     try {
-      // Crear la factura con el cliente
-      const invoice = await serviceContainer.invoiceService.createInvoice(client);
+      // Crear la factura con el cliente y los items
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client,
+          items: items.map((item) => ({
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          })),
+          status: 'draft',
+        }),
+      });
 
-      // Agregar todos los items a la factura
-      for (const item of items) {
-        await serviceContainer.invoiceService.addItemToInvoice(
-          invoice.id,
-          item.description,
-          item.quantity,
-          item.unitPrice
-        );
+      const result = (await response.json()) as InvoiceResponse;
+
+      if (result.success) {
+        toast.success('Factura guardada como borrador');
+        router.push('/');
+      } else {
+        toast.error(result.error || 'Error al guardar la factura');
       }
-
-      toast.success('Factura guardada como borrador');
-      router.push('/');
     } catch (error) {
       console.error('Error saving invoice:', error);
       toast.error('Error al guardar la factura');
@@ -100,24 +124,31 @@ export default function NewInvoicePage() {
 
     setSaving(true);
     try {
-      // Crear la factura con el cliente
-      const invoice = await serviceContainer.invoiceService.createInvoice(client);
+      // Crear la factura con el cliente y los items
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client,
+          items: items.map((item) => ({
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          })),
+          status: 'completed',
+        }),
+      });
 
-      // Agregar todos los items a la factura
-      for (const item of items) {
-        await serviceContainer.invoiceService.addItemToInvoice(
-          invoice.id,
-          item.description,
-          item.quantity,
-          item.unitPrice
-        );
+      const result = (await response.json()) as InvoiceResponse;
+
+      if (result.success) {
+        toast.success('Factura creada exitosamente');
+        router.push('/');
+      } else {
+        toast.error(result.error || 'Error al crear la factura');
       }
-
-      // Marcar como completada
-      await serviceContainer.invoiceService.updateInvoiceStatus(invoice.id, 'completed');
-
-      toast.success('Factura creada exitosamente');
-      router.push('/');
     } catch (error) {
       console.error('Error creating invoice:', error);
       toast.error('Error al crear la factura');
@@ -143,14 +174,16 @@ export default function NewInvoicePage() {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-black">Nueva Factura</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-black">
+          Nueva Factura
+        </h1>
         <div className="animate-pulse space-y-4">
           <div className="h-32 bg-gray-200 rounded"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -167,13 +200,14 @@ export default function NewInvoicePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">Nueva Factura</h1>
-          <p className="text-gray-600">Crea una nueva factura para tus clientes</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">
+            Nueva Factura
+          </h1>
+          <p className="text-gray-600">
+            Crea una nueva factura para tus clientes
+          </p>
         </div>
-        <Button
-          onClick={() => router.push('/')}
-          variant="outline"
-        >
+        <Button onClick={() => router.push('/')} variant="outline">
           Cancelar
         </Button>
       </div>
@@ -197,7 +231,9 @@ export default function NewInvoicePage() {
           <div className="space-y-3">
             <div className="flex justify-between items-center text-lg">
               <span className="text-gray-700">Subtotal:</span>
-              <span className="font-medium">{formatCurrency(calculateSubtotal())}</span>
+              <span className="font-medium">
+                {formatCurrency(calculateSubtotal())}
+              </span>
             </div>
 
             {company.tipEnabled && (
@@ -205,14 +241,18 @@ export default function NewInvoicePage() {
                 <span className="text-gray-700">
                   Propina ({company.tipPercentage}%):
                 </span>
-                <span className="font-medium">{formatCurrency(calculateTip())}</span>
+                <span className="font-medium">
+                  {formatCurrency(calculateTip())}
+                </span>
               </div>
             )}
 
             <div className="border-t pt-3">
               <div className="flex justify-between items-center text-xl">
                 <span className="font-bold text-black">Total:</span>
-                <span className="font-bold text-black">{formatCurrency(calculateTotal())}</span>
+                <span className="font-bold text-black">
+                  {formatCurrency(calculateTotal())}
+                </span>
               </div>
             </div>
           </div>
