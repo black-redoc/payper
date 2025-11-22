@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { CompanyEntity } from '@/domain/entities/Company';
 import { serviceContainer } from '@/shared/utils/serviceContainer';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -27,7 +26,7 @@ export function CompanyForm() {
     website: '',
     taxId: '',
     tipPercentage: 10,
-    tipEnabled: true
+    tipEnabled: true,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,7 +48,7 @@ export function CompanyForm() {
           website: company.website || '',
           taxId: company.taxId || '',
           tipPercentage: company.tipPercentage || 10,
-          tipEnabled: company.tipEnabled ?? true
+          tipEnabled: company.tipEnabled ?? true,
         });
         setCompanyId(company.id);
       }
@@ -66,9 +65,13 @@ export function CompanyForm() {
 
     try {
       if (companyId) {
-        await serviceContainer.companyService.updateCompany(companyId, formData);
+        await serviceContainer.companyService.updateCompany(
+          companyId,
+          formData
+        );
       } else {
-        const newCompany = await serviceContainer.companyService.createCompany(formData);
+        const newCompany =
+          await serviceContainer.companyService.createCompany(formData);
         setCompanyId(newCompany.id);
       }
       toast.success('Datos de la empresa guardados exitosamente');
@@ -82,9 +85,14 @@ export function CompanyForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) || 0 : value
+      [name]:
+        type === 'checkbox'
+          ? checked
+          : type === 'number'
+            ? parseFloat(value) || 0
+            : value,
     }));
   };
 
@@ -105,7 +113,10 @@ export function CompanyForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Nombre de la empresa *
             </label>
             <input
@@ -120,7 +131,10 @@ export function CompanyForm() {
           </div>
 
           <div>
-            <label htmlFor="taxId" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="taxId"
+              className="block text-sm font-medium text-black mb-1"
+            >
               NIT / RUT
             </label>
             <input
@@ -134,7 +148,10 @@ export function CompanyForm() {
           </div>
 
           <div className="md:col-span-2">
-            <label htmlFor="address" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Dirección
             </label>
             <input
@@ -148,7 +165,10 @@ export function CompanyForm() {
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Teléfono
             </label>
             <input
@@ -162,7 +182,10 @@ export function CompanyForm() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Correo electrónico
             </label>
             <input
@@ -176,7 +199,10 @@ export function CompanyForm() {
           </div>
 
           <div className="md:col-span-2">
-            <label htmlFor="website" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="website"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Sitio web
             </label>
             <input
@@ -192,7 +218,9 @@ export function CompanyForm() {
         </div>
 
         <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-medium text-black mb-4">Configuración de Propina</h3>
+          <h3 className="text-lg font-medium text-black mb-4">
+            Configuración de Propina
+          </h3>
 
           <div className="space-y-4">
             <div className="flex items-center">
@@ -204,14 +232,20 @@ export function CompanyForm() {
                 onChange={handleInputChange}
                 className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
               />
-              <label htmlFor="tipEnabled" className="ml-2 block text-sm text-black">
+              <label
+                htmlFor="tipEnabled"
+                className="ml-2 block text-sm text-black"
+              >
                 Habilitar propina en las facturas
               </label>
             </div>
 
             {formData.tipEnabled && (
               <div>
-                <label htmlFor="tipPercentage" className="block text-sm font-medium text-black mb-1">
+                <label
+                  htmlFor="tipPercentage"
+                  className="block text-sm font-medium text-black mb-1"
+                >
                   Porcentaje de propina (%)
                 </label>
                 <input

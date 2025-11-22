@@ -1,53 +1,66 @@
 {
-	"name": "payper",
-	"version": "0.1.0",
-	"private": true,
-	"scripts": {
-		"dev": "next dev --turbopack",
-		"build": "prisma generate && next build",
-		"start": "next start",
-		"lint": "next lint",
-		"test": "vitest",
-		"test:ui": "vitest --ui",
-		"test:run": "vitest run",
-		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
-		"db:migrate": "prisma migrate dev",
-		"db:generate": "prisma generate",
-		"db:studio": "prisma studio",
-		"db:push": "prisma db push",
-		"db:seed": "prisma db seed"
-	},
-	"dependencies": {
-		"@opennextjs/cloudflare": "^1.3.0",
-		"@testing-library/react": "^16.3.0",
-		"@types/uuid": "^10.0.0",
-		"dotenv": "^17.2.3",
-		"html2canvas": "^1.4.1",
-		"jspdf": "^3.0.3",
-		"next": "15.4.6",
-		"react": "19.1.0",
-		"react-dom": "19.1.0",
-		"react-hot-toast": "^2.6.0",
-		"uuid": "^13.0.0"
-	},
-	"devDependencies": {
-		"@eslint/eslintrc": "^3",
-		"@prisma/client": "^6.19.0",
-		"@tailwindcss/postcss": "^4",
-		"@types/node": "^20.19.24",
-		"@types/react": "^19",
-		"@types/react-dom": "^19",
-		"@vitejs/plugin-react": "^5.1.0",
-		"@vitest/ui": "^4.0.8",
-		"eslint": "^9",
-		"eslint-config-next": "15.4.6",
-		"jsdom": "^27.1.0",
-		"prisma": "^6.19.0",
-		"tailwindcss": "^4",
-		"typescript": "^5",
-		"vitest": "^4.0.8",
-		"wrangler": "^4.46.0"
-	}
+  "name": "payper",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.3.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/uuid": "^10.0.0",
+    "dotenv": "^17.2.3",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
+    "next": "15.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hot-toast": "^2.6.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@prisma/client": "^6.19.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.0",
+    "@vitest/ui": "^4.0.8",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.6",
+    "husky": "^9.1.7",
+    "jsdom": "^27.1.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.6.2",
+    "prisma": "^6.19.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.0.8",
+    "wrangler": "^4.46.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
 }
