@@ -62,7 +62,10 @@ jobs:
         run: npm run db:generate
 
       - name: Configure Wrangler with production settings
-        run: echo "${{ secrets.WRANGLER_DATA }}" > wrangler.jsonc
+        run: |
+          cat > wrangler.jsonc << 'EOF'
+          ${{ secrets.WRANGLER_DATA }}
+          EOF
 
       - name: Build application
         run: npx opennextjs-cloudflare build
