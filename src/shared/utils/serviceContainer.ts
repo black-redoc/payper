@@ -1,16 +1,16 @@
 import { InvoiceService } from '@/domain/services/InvoiceService';
 import { CompanyService } from '@/domain/services/CompanyService';
 import { NoteService } from '@/domain/services/NoteService';
-import { LocalStorageInvoiceRepository } from '@/infrastructure/repositories/LocalStorageInvoiceRepository';
-import { LocalStorageCompanyRepository } from '@/infrastructure/repositories/LocalStorageCompanyRepository';
-import { LocalStorageNoteRepository } from '@/infrastructure/repositories/LocalStorageNoteRepository';
+import { PrismaInvoiceRepository } from '@/infrastructure/repositories/PrismaInvoiceRepository';
+import { PrismaCompanyRepository } from '@/infrastructure/repositories/PrismaCompanyRepository';
+import { PrismaNoteRepository } from '@/infrastructure/repositories/PrismaNoteRepository';
 
 class ServiceContainer {
   private static instance: ServiceContainer;
 
-  private _invoiceRepository?: LocalStorageInvoiceRepository;
-  private _companyRepository?: LocalStorageCompanyRepository;
-  private _noteRepository?: LocalStorageNoteRepository;
+  private _invoiceRepository?: PrismaInvoiceRepository;
+  private _companyRepository?: PrismaCompanyRepository;
+  private _noteRepository?: PrismaNoteRepository;
   private _invoiceService?: InvoiceService;
   private _companyService?: CompanyService;
   private _noteService?: NoteService;
@@ -22,23 +22,23 @@ class ServiceContainer {
     return ServiceContainer.instance;
   }
 
-  get invoiceRepository(): LocalStorageInvoiceRepository {
+  get invoiceRepository(): PrismaInvoiceRepository {
     if (!this._invoiceRepository) {
-      this._invoiceRepository = new LocalStorageInvoiceRepository();
+      this._invoiceRepository = new PrismaInvoiceRepository();
     }
     return this._invoiceRepository;
   }
 
-  get companyRepository(): LocalStorageCompanyRepository {
+  get companyRepository(): PrismaCompanyRepository {
     if (!this._companyRepository) {
-      this._companyRepository = new LocalStorageCompanyRepository();
+      this._companyRepository = new PrismaCompanyRepository();
     }
     return this._companyRepository;
   }
 
-  get noteRepository(): LocalStorageNoteRepository {
+  get noteRepository(): PrismaNoteRepository {
     if (!this._noteRepository) {
-      this._noteRepository = new LocalStorageNoteRepository();
+      this._noteRepository = new PrismaNoteRepository();
     }
     return this._noteRepository;
   }

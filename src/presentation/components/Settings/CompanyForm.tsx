@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { serviceContainer } from '@/shared/utils/serviceContainer';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 
@@ -38,8 +37,24 @@ export function CompanyForm() {
 
   const loadCompanyData = async () => {
     try {
-      const company = await serviceContainer.companyService.getCompany();
-      if (company) {
+      const response = await fetch('/api/company');
+      const result = (await response.json()) as {
+        success: boolean;
+        data?: {
+          id: string;
+          name: string;
+          address?: string;
+          phone?: string;
+          email?: string;
+          website?: string;
+          taxId?: string;
+          tipPercentage: number;
+          tipEnabled: boolean;
+        };
+      };
+
+      if (result.success && result.data) {
+        const company = result.data;
         setFormData({
           name: company.name || '',
           address: company.address || '',
@@ -64,16 +79,31 @@ export function CompanyForm() {
     setSaving(true);
 
     try {
-      if (companyId) {
-        await serviceContainer.companyService.updateCompany(
-          companyId,
-          formData
-        );
-      } else {
-        const newCompany =
-          await serviceContainer.companyService.createCompany(formData);
-        setCompanyId(newCompany.id);
+      const method = companyId ? 'PUT' : 'POST';
+      const body = companyId ? { id: companyId, ...formData } : formData;
+
+      const response = await fetch('/api/company', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = (await response.json()) as {
+        success: boolean;
+        data?: { id: string };
+        error?: string;
+      };
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save company');
       }
+
+      if (!companyId && result.data) {
+        setCompanyId(result.data.id);
+      }
+
       toast.success('Datos de la empresa guardados exitosamente');
     } catch (error) {
       console.error('Error saving company data:', error);
