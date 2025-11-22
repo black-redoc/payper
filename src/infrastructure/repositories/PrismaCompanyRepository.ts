@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CompanyRepository } from '@/domain/repositories/CompanyRepository';
 import { CompanyEntity } from '@/domain/entities/Company';
-import prisma from '../database/prisma';
+import { getPrisma } from '../database/prisma';
 
 export class PrismaCompanyRepository implements CompanyRepository {
   async save(company: CompanyEntity): Promise<CompanyEntity> {
+    const prisma = await getPrisma();
     const created = await prisma.company.create({
       data: {
         id: company.id,
@@ -26,6 +27,7 @@ export class PrismaCompanyRepository implements CompanyRepository {
   }
 
   async findById(id: string): Promise<CompanyEntity | null> {
+    const prisma = await getPrisma();
     const company = await prisma.company.findUnique({
       where: { id },
     });
@@ -34,12 +36,14 @@ export class PrismaCompanyRepository implements CompanyRepository {
   }
 
   async findFirst(): Promise<CompanyEntity | null> {
+    const prisma = await getPrisma();
     const company = await prisma.company.findFirst();
 
     return company ? this.mapToEntity(company) : null;
   }
 
   async update(company: CompanyEntity): Promise<CompanyEntity> {
+    const prisma = await getPrisma();
     const updated = await prisma.company.update({
       where: { id: company.id },
       data: {
@@ -60,6 +64,7 @@ export class PrismaCompanyRepository implements CompanyRepository {
   }
 
   async delete(id: string): Promise<void> {
+    const prisma = await getPrisma();
     await prisma.company.delete({
       where: { id },
     });
