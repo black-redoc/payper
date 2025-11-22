@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch invoices',
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch invoices',
       },
       { status: 500 }
     );
@@ -45,7 +46,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Company information is required to create invoices. Please set up company data first.',
+          error:
+            'Company information is required to create invoices. Please set up company data first.',
         },
         { status: 400 }
       );
@@ -60,10 +62,30 @@ export async function POST(request: NextRequest) {
     // Crear la factura
     const invoice = await invoiceService.createInvoice(client);
 
+    // Agregar items si se proporcionan
+    if (body.items && Array.isArray(body.items)) {
+      for (const item of body.items) {
+        await invoiceService.addItemToInvoice(
+          invoice.id,
+          item.description,
+          item.quantity,
+          item.unitPrice
+        );
+      }
+    }
+
+    // Actualizar estado si se proporciona
+    if (body.status && body.status !== 'draft') {
+      await invoiceService.updateInvoiceStatus(invoice.id, body.status);
+    }
+
+    // Obtener la factura actualizada con todos los items
+    const updatedInvoice = await invoiceService.getInvoice(invoice.id);
+
     return NextResponse.json(
       {
         success: true,
-        data: invoice,
+        data: updatedInvoice,
       },
       { status: 201 }
     );
@@ -72,7 +94,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create invoice',
+        error:
+          error instanceof Error ? error.message : 'Failed to create invoice',
       },
       { status: 500 }
     );

@@ -2,9 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { InvoiceEntity } from '@/domain/entities/Invoice';
-import { serviceContainer } from '@/shared/utils/serviceContainer';
 import { Card } from '../ui/Card';
 import Link from 'next/link';
+
+interface InvoicesResponse {
+  success: boolean;
+  data: InvoiceEntity[];
+}
 
 export function RecentInvoices() {
   const [invoices, setInvoices] = useState<InvoiceEntity[]>([]);
@@ -16,8 +20,12 @@ export function RecentInvoices() {
 
   const loadRecentInvoices = async () => {
     try {
-      const recentInvoices = await serviceContainer.invoiceService.getRecentInvoices(5);
-      setInvoices(recentInvoices);
+      const response = await fetch('/api/invoices?limit=5');
+      const result = (await response.json()) as InvoicesResponse;
+
+      if (result.success && result.data) {
+        setInvoices(result.data);
+      }
     } catch (error) {
       console.error('Error loading recent invoices:', error);
     } finally {
@@ -29,7 +37,7 @@ export function RecentInvoices() {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -92,7 +100,9 @@ export function RecentInvoices() {
             >
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="font-medium text-black">{invoice.number}</span>
+                  <span className="font-medium text-black">
+                    {invoice.number}
+                  </span>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}
                   >

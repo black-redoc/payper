@@ -3,9 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { serviceContainer } from '@/shared/utils/serviceContainer';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+
+interface CompanyResponse {
+  success: boolean;
+  data: {
+    id: string;
+    name: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+    taxId?: string;
+    logo?: string;
+    tipPercentage: number;
+    tipEnabled: boolean;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+}
 
 export function QuickActions() {
   const router = useRouter();
@@ -17,8 +34,14 @@ export function QuickActions() {
 
   const checkCompanyData = async () => {
     try {
-      const hasData = await serviceContainer.companyService.hasCompanyData();
-      setHasCompanyData(hasData);
+      const response = await fetch('/api/company');
+      const result = (await response.json()) as CompanyResponse;
+      if (result.success && result.data) {
+        // Verificar si la empresa tiene datos completos (al menos el nombre)
+        setHasCompanyData(!!result.data.name);
+      } else {
+        setHasCompanyData(false);
+      }
     } catch (error) {
       console.error('Error checking company data:', error);
       setHasCompanyData(false);
@@ -29,7 +52,9 @@ export function QuickActions() {
     if (hasCompanyData) {
       router.push('/invoices/new');
     } else {
-      toast.error('Debes configurar los datos de tu empresa antes de crear facturas.');
+      toast.error(
+        'Debes configurar los datos de tu empresa antes de crear facturas.'
+      );
       router.push('/settings');
     }
   };
@@ -41,22 +66,22 @@ export function QuickActions() {
       icon: '🧾',
       onClick: handleNewInvoice,
       variant: 'primary' as const,
-      disabled: hasCompanyData === false
+      disabled: hasCompanyData === false,
     },
     {
       title: 'Ver Facturas',
       description: 'Ver todas las facturas',
       icon: '📋',
       onClick: () => router.push('/invoices'),
-      variant: 'secondary' as const
+      variant: 'secondary' as const,
     },
     {
       title: 'Configuración',
       description: 'Configurar empresa y ajustes',
       icon: '⚙️',
       onClick: () => router.push('/settings'),
-      variant: 'outline' as const
-    }
+      variant: 'outline' as const,
+    },
   ];
 
   return (
@@ -78,8 +103,15 @@ export function QuickActions() {
             <div className="flex items-start space-x-3 mb-4">
               <span className="text-2xl flex-shrink-0">{action.icon}</span>
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-black truncate" title={action.title}>{action.title}</h3>
-                <p className="text-sm text-gray-600 break-words">{action.description}</p>
+                <h3
+                  className="font-medium text-black truncate"
+                  title={action.title}
+                >
+                  {action.title}
+                </h3>
+                <p className="text-sm text-gray-600 break-words">
+                  {action.description}
+                </p>
               </div>
             </div>
             <Button

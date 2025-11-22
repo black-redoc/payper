@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { serviceContainer } from '@/shared/utils/serviceContainer';
 import { Card } from '../ui/Card';
 
 interface Stats {
@@ -10,6 +9,11 @@ interface Stats {
   pendingInvoices: number;
   totalRevenue: number;
   monthlyRevenue: number;
+}
+
+interface StatsResponse {
+  success: boolean;
+  data: Stats;
 }
 
 export function DashboardStats() {
@@ -28,44 +32,12 @@ export function DashboardStats() {
 
   const loadStats = async () => {
     try {
-      const invoices = await serviceContainer.invoiceService.getAllInvoices();
+      const response = await fetch('/api/invoices/stats');
+      const result = (await response.json()) as StatsResponse;
 
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-
-      const calculations = invoices.reduce(
-        (acc, invoice) => {
-          acc.totalInvoices++;
-
-          if (invoice.status === 'completed') {
-            acc.completedInvoices++;
-            acc.totalRevenue += invoice.total.amount;
-
-            const invoiceDate = new Date(invoice.updatedAt);
-            if (
-              invoiceDate.getMonth() === currentMonth &&
-              invoiceDate.getFullYear() === currentYear
-            ) {
-              acc.monthlyRevenue += invoice.total.amount;
-            }
-          }
-
-          if (invoice.status === 'pending') {
-            acc.pendingInvoices++;
-          }
-
-          return acc;
-        },
-        {
-          totalInvoices: 0,
-          completedInvoices: 0,
-          pendingInvoices: 0,
-          totalRevenue: 0,
-          monthlyRevenue: 0,
-        }
-      );
-
-      setStats(calculations);
+      if (result.success && result.data) {
+        setStats(result.data);
+      }
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {

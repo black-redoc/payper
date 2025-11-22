@@ -4,15 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { InvoiceEntity, InvoiceStatus } from '@/domain/entities/Invoice';
-import { serviceContainer } from '@/shared/utils/serviceContainer';
 import { Button } from '@/presentation/components/ui/Button';
 import { Card } from '@/presentation/components/ui/Card';
+
+interface InvoicesResponse {
+  success: boolean;
+  data: InvoiceEntity[];
+}
 
 export default function InvoicesPage() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<InvoiceEntity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<InvoiceStatus | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<InvoiceStatus | 'all'>(
+    'all'
+  );
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -21,8 +27,12 @@ export default function InvoicesPage() {
 
   const loadInvoices = async () => {
     try {
-      const allInvoices = await serviceContainer.invoiceService.getAllInvoices();
-      setInvoices(allInvoices);
+      const response = await fetch('/api/invoices');
+      const result = (await response.json()) as InvoicesResponse;
+
+      if (result.success && result.data) {
+        setInvoices(result.data);
+      }
     } catch (error) {
       console.error('Error loading invoices:', error);
     } finally {
@@ -34,7 +44,7 @@ export default function InvoicesPage() {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -65,11 +75,14 @@ export default function InvoicesPage() {
   };
 
   const filteredInvoices = invoices.filter((invoice) => {
-    const matchesStatus = filterStatus === 'all' || invoice.status === filterStatus;
+    const matchesStatus =
+      filterStatus === 'all' || invoice.status === filterStatus;
     const matchesSearch =
       searchTerm === '' ||
       invoice.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      invoice.client?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.client?.fullName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       invoice.client?.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesStatus && matchesSearch;
@@ -106,10 +119,15 @@ export default function InvoicesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">Facturas</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">
+            Facturas
+          </h1>
           <p className="text-gray-600">Gestiona todas tus facturas</p>
         </div>
-        <Button onClick={() => router.push('/invoices/new')} className="w-full sm:w-auto">
+        <Button
+          onClick={() => router.push('/invoices/new')}
+          className="w-full sm:w-auto"
+        >
           Nueva Factura
         </Button>
       </div>
@@ -144,7 +162,10 @@ export default function InvoicesPage() {
       <Card title="Filtrar Facturas">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="search"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Buscar
             </label>
             <input
@@ -157,13 +178,18 @@ export default function InvoicesPage() {
             />
           </div>
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-black mb-1">
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-black mb-1"
+            >
               Estado
             </label>
             <select
               id="status"
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as InvoiceStatus | 'all')}
+              onChange={(e) =>
+                setFilterStatus(e.target.value as InvoiceStatus | 'all')
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
             >
               <option value="all">Todos los estados</option>
@@ -222,7 +248,9 @@ export default function InvoicesPage() {
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4">
-                      <span className="font-medium text-black">{invoice.number}</span>
+                      <span className="font-medium text-black">
+                        {invoice.number}
+                      </span>
                     </td>
                     <td className="py-3 px-4">
                       <div>
@@ -230,17 +258,22 @@ export default function InvoicesPage() {
                           {invoice.client?.fullName || 'Sin cliente'}
                         </p>
                         {invoice.client?.email && (
-                          <p className="text-xs text-gray-500">{invoice.client.email}</p>
+                          <p className="text-xs text-gray-500">
+                            {invoice.client.email}
+                          </p>
                         )}
                       </div>
                     </td>
                     <td className="py-3 px-4">
                       <span className="text-sm text-gray-600">
-                        {new Date(invoice.updatedAt).toLocaleDateString('es-CO', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                        {new Date(invoice.updatedAt).toLocaleDateString(
+                          'es-CO',
+                          {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          }
+                        )}
                       </span>
                     </td>
                     <td className="py-3 px-4">
